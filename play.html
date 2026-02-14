@@ -311,10 +311,17 @@
             document.getElementById('touchWarning').style.display = 'flex';
         }
 
+        // Check if URL is local/relative (self-hosted games don't need proxy)
+        function isLocalUrl(url) {
+            if (!url) return false;
+            return url.startsWith('./') || url.startsWith('../') || url.startsWith('/') || url.startsWith(window.location.origin);
+        }
+
         // Build proxied URL
         function buildProxy(url) {
             if (!url || url.includes(PROXY_URL)) return url;
             if (url.startsWith('data:') || url.startsWith('blob:') || url.startsWith('about:')) return url;
+            if (isLocalUrl(url)) return url; // Local games load directly
             return `${PROXY_URL}/play/${url}`;
         }
 
