@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0a0f">
+    <title>Loading Game... - Gemtra Games</title>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #7c3aed;
+            --primary-light: #a78bfa;
+            --bg: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a2e;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: rgba(124, 58, 237, 0.15);
+            --danger: #ef4444;
+            --success: #22c55e;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top bar */
+        .player-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            min-height: 48px;
+            flex-shrink: 0;
+        }
+
+        .player-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+            color: var(--text);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .back-btn:hover { background: var(--primary); border-color: var(--primary); }
+        .back-btn svg { width: 16px; height: 16px; }
+
+        .game-title {
+            font-size: 16px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 300px;
+        }
+
+        .player-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .control-btn:hover { color: var(--text); background: var(--primary); border-color: var(--primary); }
+        .control-btn svg { width: 18px; height: 18px; }
+
+        .touch-warning {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 6px;
+            font-size: 12px;
+            color: #fca5a5;
+        }
+        .touch-warning svg { width: 14px; height: 14px; fill: #fca5a5; }
+
+        /* Game frame */
+        .game-frame {
+            flex: 1;
+            position: relative;
+            background: #000;
+        }
+
+        .game-frame iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            z-index: 10;
+            transition: opacity 0.3s;
+        }
+        .loading-overlay.fade-out { opacity: 0; pointer-events: none; }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--bg-tertiary);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text { font-size: 16px; color: var(--text); margin-bottom: 4px; }
+        .loading-sub { font-size: 13px; color: var(--text-muted); }
+
+        /* Error overlay */
+        .error-overlay {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            z-index: 11;
+            padding: 24px;
+            text-align: center;
+        }
+        .error-overlay.active { display: flex; }
+
+        .error-icon { font-size: 48px; margin-bottom: 16px; }
+        .error-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+        .error-msg { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; max-width: 400px; }
+
+        .error-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-light); }
+        .btn-secondary { background: var(--bg-tertiary); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: rgba(124, 58, 237, 0.2); }
+
+        /* Fullscreen: hide bar */
+        .fullscreen-active .player-bar { display: none; }
+
+        /* Keyboard hint (bottom right) */
+        .keyboard-hint {
+            position: fixed;
+            bottom: 8px;
+            right: 12px;
+            font-size: 11px;
+            color: var(--text-muted);
+            opacity: 0.5;
+            z-index: 5;
+            pointer-events: none;
+        }
+        .keyboard-hint kbd {
+            display: inline-block;
+            padding: 1px 5px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            font-family: inherit;
+            font-size: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .game-title { max-width: 120px; font-size: 14px; }
+            .keyboard-hint { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top bar -->
+    <div class="player-bar" id="playerBar">
+        <div class="player-bar-left">
+            <a href="./" class="back-btn" id="backBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Back
+            </a>
+            <span class="game-title" id="gameTitle">Loading...</span>
+        </div>
+        <div class="player-bar-right">
+            <div class="touch-warning" id="touchWarning">
+                <svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                Keyboard required
+            </div>
+            <button class="control-btn" id="reloadBtn" title="Reload game" aria-label="Reload game">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+            </button>
+            <button class="control-btn" id="fullscreenBtn" title="Fullscreen (F)" aria-label="Toggle fullscreen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            </button>
+            <button class="control-btn" id="newTabBtn" title="Open in new tab" aria-label="Open game in new tab">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Game area -->
+    <div class="game-frame" id="gameFrame">
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="spinner"></div>
+            <div class="loading-text" id="loadingText">Loading game...</div>
+            <div class="loading-sub">If it takes too long, the game might be unavailable</div>
+        </div>
+        <div class="error-overlay" id="errorOverlay">
+            <div class="error-icon">⚠️</div>
+            <div class="error-title">Couldn't Load Game</div>
+            <div class="error-msg" id="errorMsg">The game failed to load. It might be blocked or unavailable.</div>
+            <div class="error-actions" id="errorActions">
+                <button class="btn btn-primary" id="retryBtn">🔄 Retry</button>
+                <button class="btn btn-secondary" id="directBtn">⚡ Try Direct</button>
+                <button class="btn btn-secondary" id="newTabErrBtn">🔗 New Tab</button>
+            </div>
+        </div>
+        <iframe id="gameIframe" src="about:blank" title="Game Player" allow="autoplay; fullscreen; accelerometer; gyroscope; gamepad; microphone; camera"></iframe>
+    </div>
+
+    <div class="keyboard-hint"><kbd>ESC</kbd> Back &nbsp; <kbd>F</kbd> Fullscreen &nbsp; <kbd>R</kbd> Reload</div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        const PROXY_URL = 'https://gemtra-proxy.modmojheh.workers.dev';
+
+        // Parse URL params
+        const params = new URLSearchParams(window.location.search);
+        const gameKey = params.get('game');
+        const gameUrl = params.get('url');
+        const gameName = params.get('name') || 'Game';
+        const isTouchGame = params.get('touch') === 'true';
+
+        if (!gameUrl) {
+            document.getElementById('gameTitle').textContent = 'No game specified';
+            document.getElementById('loadingOverlay').style.display = 'none';
+            const errOverlay = document.getElementById('errorOverlay');
+            errOverlay.classList.add('active');
+            document.getElementById('errorMsg').textContent = 'No game URL provided. Go back and select a game.';
+            document.getElementById('errorActions').innerHTML = '<a href="./" class="btn btn-primary">← Back to Games</a>';
+            return;
+        }
+
+        // Set page title
+        document.title = `${gameName} - Gemtra Games`;
+        document.getElementById('gameTitle').textContent = gameName;
+        document.getElementById('loadingText').textContent = `Loading ${gameName}...`;
+
+        // Touch warning
+        if (!isTouchGame && 'ontouchstart' in window) {
+            document.getElementById('touchWarning').style.display = 'flex';
+        }
+
+        // Build proxied URL
+        function buildProxy(url) {
+            if (!url || url.includes(PROXY_URL)) return url;
+            if (url.startsWith('data:') || url.startsWith('blob:') || url.startsWith('about:')) return url;
+            return `${PROXY_URL}/play/${url}`;
+        }
+
+        const proxyUrl = buildProxy(gameUrl);
+        const iframe = document.getElementById('gameIframe');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const errorOverlay = document.getElementById('errorOverlay');
+
+        // Load game
+        let loadTimedOut = false;
+        const loadTimeout = setTimeout(() => {
+            loadTimedOut = true;
+            showError('Game is taking too long to load. It might be blocked or unavailable.');
+        }, 15000);
+
+        iframe.addEventListener('load', function onLoad() {
+            if (loadTimedOut) return;
+            clearTimeout(loadTimeout);
+            iframe.removeEventListener('load', onLoad);
+            loadingOverlay.classList.add('fade-out');
+            setTimeout(() => { loadingOverlay.style.display = 'none'; }, 300);
+        });
+
+        iframe.addEventListener('error', function onError() {
+            clearTimeout(loadTimeout);
+            iframe.removeEventListener('error', onError);
+            showError('Failed to load game. It might be blocked by your network.');
+        });
+
+        iframe.src = proxyUrl;
+
+        function showError(msg) {
+            loadingOverlay.style.display = 'none';
+            errorOverlay.classList.add('active');
+            document.getElementById('errorMsg').textContent = msg;
+        }
+
+        function hideError() {
+            errorOverlay.classList.remove('active');
+            loadingOverlay.style.display = 'flex';
+            loadingOverlay.classList.remove('fade-out');
+        }
+
+        // Retry with proxy
+        document.getElementById('retryBtn').addEventListener('click', () => {
+            hideError();
+            document.getElementById('loadingText').textContent = `Retrying ${gameName}...`;
+            iframe.src = buildProxy(gameUrl);
+            setTimeout(() => {
+                if (errorOverlay.classList.contains('active')) return;
+                loadingOverlay.classList.add('fade-out');
+                setTimeout(() => { loadingOverlay.style.display = 'none'; }, 300);
+            }, 10000);
+        });
+
+        // Try direct link
+        document.getElementById('directBtn').addEventListener('click', () => {
+            hideError();
+            document.getElementById('loadingText').textContent = 'Trying direct connection...';
+            iframe.src = gameUrl;
+            setTimeout(() => {
+                if (errorOverlay.classList.contains('active')) return;
+                loadingOverlay.classList.add('fade-out');
+                setTimeout(() => { loadingOverlay.style.display = 'none'; }, 300);
+            }, 10000);
+        });
+
+        // Open in new tab
+        document.getElementById('newTabErrBtn').addEventListener('click', () => {
+            window.open(gameUrl, '_blank');
+        });
+        document.getElementById('newTabBtn').addEventListener('click', () => {
+            window.open(gameUrl, '_blank');
+        });
+
+        // Reload
+        document.getElementById('reloadBtn').addEventListener('click', () => {
+            hideError();
+            document.getElementById('loadingText').textContent = `Reloading ${gameName}...`;
+            iframe.src = proxyUrl;
+            setTimeout(() => {
+                if (errorOverlay.classList.contains('active')) return;
+                loadingOverlay.classList.add('fade-out');
+                setTimeout(() => { loadingOverlay.style.display = 'none'; }, 300);
+            }, 10000);
+        });
+
+        // Fullscreen
+        document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
+
+        function toggleFullscreen() {
+            const frame = document.getElementById('gameFrame');
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+                document.body.classList.remove('fullscreen-active');
+            } else {
+                (frame.requestFullscreen || frame.webkitRequestFullscreen || frame.msRequestFullscreen).call(frame);
+                document.body.classList.add('fullscreen-active');
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                document.body.classList.remove('fullscreen-active');
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Don't capture if typing in input
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            if (e.key === 'Escape') {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                } else {
+                    window.location.href = './';
+                }
+            } else if (e.key === 'f' || e.key === 'F') {
+                e.preventDefault();
+                toggleFullscreen();
+            } else if (e.key === 'r' || e.key === 'R') {
+                if (!e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    document.getElementById('reloadBtn').click();
+                }
+            }
+        });
+    })();
+    </script>
+</body>
+</html>

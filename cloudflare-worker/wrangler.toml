@@ -1,0 +1,6 @@
+name = "gemtra-ai"
+main = "ai-worker.js"
+compatibility_date = "2024-01-01"
+
+# For secure deployment, set CEREBRAS_API_KEY as a secret:
+# wrangler secret put CEREBRAS_API_KEY

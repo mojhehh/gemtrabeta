@@ -1,0 +1,28 @@
+# Gemtra Game Proxy Worker
+# Deploy with: wrangler deploy -c wrangler-proxy.toml
+
+name = "gemtra-proxy"
+main = "game-proxy.js"
+compatibility_date = "2024-01-01"
+
+# Workers have a 10ms CPU limit on free tier, 50ms on paid
+# Most proxy operations complete well under this
+
+# Optional: Add KV namespace for caching
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "your-kv-namespace-id"
+
+# Optional: Custom domain routes
+# [[routes]]
+# pattern = "proxy.yourdomain.com/*"
+# zone_name = "yourdomain.com"
+
+# Environment variables (optional)
+# [vars]
+# ENCODE_KEY = "your-custom-key"
+
+# For production, consider:
+# - Adding rate limiting rules in Cloudflare dashboard
+# - Setting up a custom domain for the proxy
+# - Enabling Cloudflare caching for static assets

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Proxy Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #00d4ff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .input-section {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #888;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #0f3460;
+            border-radius: 8px;
+            background: #0a0a1a;
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #000;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #333;
+            color: #fff;
+        }
+        
+        .btn-secondary:hover {
+            background: #444;
+        }
+        
+        .output-section {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .output-section h3 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+        }
+        
+        .url-display {
+            background: #0a0a1a;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            word-break: break-all;
+            margin-bottom: 10px;
+            border-left: 3px solid #00d4ff;
+        }
+        
+        .game-frame-container {
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        
+        .game-frame-header {
+            background: #16213e;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .game-frame-header span {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        #gameFrame {
+            width: 100%;
+            height: 600px;
+            border: none;
+            display: block;
+        }
+        
+        .status {
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .status.success {
+            background: rgba(0, 255, 100, 0.1);
+            color: #00ff64;
+            border: 1px solid #00ff64;
+        }
+        
+        .status.error {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff4444;
+            border: 1px solid #ff4444;
+        }
+        
+        .status.info {
+            background: rgba(0, 212, 255, 0.1);
+            color: #00d4ff;
+            border: 1px solid #00d4ff;
+        }
+        
+        .examples {
+            margin-top: 20px;
+        }
+        
+        .examples h3 {
+            color: #888;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .example-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .example-link {
+            background: #0f3460;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .example-link:hover {
+            background: #1a4a7a;
+        }
+        
+        .notes {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .notes h4 {
+            color: #ffa500;
+            margin-bottom: 10px;
+        }
+        
+        .notes ul {
+            margin-left: 20px;
+            color: #888;
+        }
+        
+        .notes li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Game Proxy Tester</h1>
+        
+        <div class="input-section">
+            <label for="workerUrl">Cloudflare Worker URL</label>
+            <input type="text" id="workerUrl" placeholder="https://your-worker.workers.dev" value="https://gemtra-proxy.modmojheh.workers.dev">
+            
+            <label for="gameUrl">Game URL to Proxy</label>
+            <input type="text" id="gameUrl" placeholder="https://example.com/game/">
+            
+            <div class="button-row">
+                <button class="btn-primary" onclick="loadGame()">🎮 Load Game</button>
+                <button class="btn-secondary" onclick="openNewTab()">↗️ Open in New Tab</button>
+                <button class="btn-secondary" onclick="generateUrl()">🔗 Generate URL</button>
+                <button class="btn-secondary" onclick="testWorker()">🔧 Test Worker</button>
+            </div>
+            
+            <div id="status"></div>
+            
+            <div class="examples">
+                <h3>Example Game URLs (click to load):</h3>
+                <div class="example-links">
+                    <span class="example-link" onclick="setGame('https://play.famobi.com/color-fill-3d')">Color Fill 3D</span>
+                    <span class="example-link" onclick="setGame('https://html5.gamedistribution.com/rvvASMiM/9af8ba46edef4ab7be498e9f85aaef49/index.html')">Stack Colors</span>
+                    <span class="example-link" onclick="setGame('https://www.miniclip.com/games/8-ball-pool-multiplayer/en/')">8 Ball Pool</span>
+                    <span class="example-link" onclick="setGame('https://example.com')">Test (example.com)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="output-section" id="urlOutput" style="display: none;">
+            <h3>Generated URLs</h3>
+            <label>Play URL (for iframe/redirect):</label>
+            <div class="url-display" id="playUrl"></div>
+            <label>Direct Proxy URL:</label>
+            <div class="url-display" id="proxyUrl"></div>
+        </div>
+        
+        <div class="game-frame-container" id="frameContainer" style="display: none;">
+            <div class="game-frame-header">
+                <span id="frameTitle">Game Loading...</span>
+                <button class="btn-secondary" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+            </div>
+            <iframe id="gameFrame" 
+                    allow="autoplay; fullscreen; gamepad; accelerometer; gyroscope">
+            </iframe>
+        </div>
+        
+        <div class="notes">
+            <h4>⚠️ Notes</h4>
+            <ul>
+                <li>Make sure your Cloudflare Worker is deployed and running</li>
+                <li>Some games may not work due to browser security restrictions (see documentation)</li>
+                <li>Check browser DevTools console for [Proxy] debug messages</li>
+                <li>WebRTC multiplayer games will NOT work through the proxy</li>
+                <li>SharedArrayBuffer games (multi-threaded Unity) will NOT work</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Load saved worker URL
+        const savedWorkerUrl = localStorage.getItem('proxyWorkerUrl');
+        if (savedWorkerUrl) {
+            document.getElementById('workerUrl').value = savedWorkerUrl;
+        }
+        
+        function setGame(url) {
+            document.getElementById('gameUrl').value = url;
+        }
+        
+        function getWorkerUrl() {
+            const url = document.getElementById('workerUrl').value.trim();
+            if (!url) {
+                showStatus('Please enter your Cloudflare Worker URL', 'error');
+                return null;
+            }
+            // Save for next time
+            localStorage.setItem('proxyWorkerUrl', url);
+            return url.replace(/\/$/, ''); // Remove trailing slash
+        }
+        
+        function getGameUrl() {
+            const url = document.getElementById('gameUrl').value.trim();
+            if (!url) {
+                showStatus('Please enter a game URL to proxy', 'error');
+                return null;
+            }
+            return url;
+        }
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.className = 'status ' + type;
+            status.textContent = message;
+            status.style.display = 'block';
+        }
+        
+        function generateUrl() {
+            const workerUrl = getWorkerUrl();
+            const gameUrl = getGameUrl();
+            if (!workerUrl || !gameUrl) return;
+            
+            const playUrl = `${workerUrl}/play/${gameUrl}`;
+            
+            document.getElementById('playUrl').textContent = playUrl;
+            document.getElementById('proxyUrl').textContent = `${workerUrl}/p/[encoded]`;
+            document.getElementById('urlOutput').style.display = 'block';
+            
+            showStatus('URLs generated! You can copy these for embedding.', 'success');
+        }
+        
+        function loadGame() {
+            const workerUrl = getWorkerUrl();
+            const gameUrl = getGameUrl();
+            if (!workerUrl || !gameUrl) return;
+            
+            const playUrl = `${workerUrl}/play/${gameUrl}`;
+            
+            document.getElementById('frameContainer').style.display = 'block';
+            document.getElementById('frameTitle').textContent = 'Loading: ' + gameUrl;
+            document.getElementById('gameFrame').src = playUrl;
+            
+            showStatus('Game loading... Check console for proxy debug messages.', 'info');
+        }
+        
+        function openNewTab() {
+            const workerUrl = getWorkerUrl();
+            const gameUrl = getGameUrl();
+            if (!workerUrl || !gameUrl) return;
+            
+            const playUrl = `${workerUrl}/play/${gameUrl}`;
+            window.open(playUrl, '_blank');
+            showStatus('Opening game in new tab...', 'info');
+        }
+        
+        async function testWorker() {
+            const workerUrl = getWorkerUrl();
+            if (!workerUrl) return;
+            
+            showStatus('Testing worker connection...', 'info');
+            
+            try {
+                const response = await fetch(workerUrl, { mode: 'cors' });
+                if (response.ok) {
+                    showStatus('✅ Worker is responding! Ready to proxy games.', 'success');
+                } else {
+                    showStatus(`⚠️ Worker returned status ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Failed to connect: ${error.message}. Is the worker deployed?`, 'error');
+            }
+        }
+        
+        function toggleFullscreen() {
+            const frame = document.getElementById('gameFrame');
+            if (frame.requestFullscreen) {
+                frame.requestFullscreen();
+            } else if (frame.webkitRequestFullscreen) {
+                frame.webkitRequestFullscreen();
+            }
+        }
+    </script>
+</body>
+</html>
