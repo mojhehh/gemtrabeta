@@ -244,6 +244,16 @@ const GAMES = {
         category: 'casual',
         featured: true,
         plays: 0
+    },
+    'moto-x3m': {
+        name: 'Moto X3M',
+        url: './games/moto-x3m/index.html',
+        description: 'Race your motorcycle through challenging obstacle courses! Perform stunts, beat the clock, and earn stars across 25 thrilling levels.',
+        touchscreen: true,
+        image: './games/moto-x3m/assets/images/x1/menu_texture.png',
+        category: 'sports',
+        featured: true,
+        plays: 0
     }
 };
 
@@ -1951,7 +1961,7 @@ let aiConversation = [
         role: 'system',
         content: `You are Gemtra AI, a helpful gaming assistant for Gemtra Games website. You help users find games, answer questions about the site, and provide game recommendations.
 
-Available games: Geometry Dash (rhythm), Block Blast (puzzle), Infinite Craft (puzzle), A Small World Cup (sports), Push Your Luck (casual), Tiny Fishing (casual).
+Available games: Geometry Dash (rhythm), Block Blast (puzzle), Infinite Craft (puzzle), A Small World Cup (sports), Push Your Luck (casual), Tiny Fishing (casual), Moto X3M (sports).
 
 Categories: rhythm, puzzle, sports, casual.
 
